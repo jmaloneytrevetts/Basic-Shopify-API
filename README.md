@@ -15,6 +15,13 @@ The recommended way to install is [through composer](http://packagist.org).
 
     $ composer require ohmybrew/basic-shopify-api
 
+##.env [Specific to this fork]
+	$ SHOPIFY_APP_NAMESPACE='Trevetts Private App'
+	SHOPIFY_API_KEY= #API Key for admin calls
+	SHOPIFY_API_SECRET = #secret for admin calls
+	SHOPIFY_MYSHOPIFY_DOMAIN = #first part of shopify domain without myshopify.com
+
+
 ## Usage
 
 Add `use OhMyBrew\BasicShopifyAPI;` to your imports.
