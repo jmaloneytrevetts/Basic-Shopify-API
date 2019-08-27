@@ -7,7 +7,7 @@
 
 A simple, tested, API wrapper for Shopify using Guzzle. It supports both the REST and GraphQL API provided by Shopify, and basic rate limiting abilities. It contains helpful methods for generating a installation URL, an authorize URL (offline and per-user), HMAC signature validation, call limits, and API requests. It works with both OAuth and private API apps.
 
-This library required PHP >= 7.  This is Jess's Fork
+This library required PHP >= 7.  This is Jess's Fork!
 
 ## Installation
 
