@@ -85,6 +85,13 @@ class BasicShopifyAPI implements LoggerAwareInterface
     protected $apiSecret;
 
     /**
+     * The Shopify API secret.
+     *
+     * @var string
+     */
+    protected $apiStoreFrontKey;
+
+    /**
      * If API calls are from a public or private app.
      *
      * @var string
@@ -97,6 +104,8 @@ class BasicShopifyAPI implements LoggerAwareInterface
      * @var stdClass
      */
     protected $user;
+
+    protected $storefront; //whether or not we are in storefront graph mode
 
     /**
      * The current API call limits from last request.
@@ -280,6 +289,20 @@ class BasicShopifyAPI implements LoggerAwareInterface
     public function setAccessToken(string $accessToken)
     {
         $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    /**
+     * Sets the access token for use with the Shopify Storefront API.
+     *
+     * @param string $accessToken The access token
+     *
+     * @return self
+     */
+    public function setStoreFrontKey(string $apiStoreFrontKey)
+    {
+        $this->apiStoreFrontKey = $apiStoreFrontKey;
 
         return $this;
     }
@@ -648,14 +671,17 @@ class BasicShopifyAPI implements LoggerAwareInterface
      *
      * @param string $query     The GraphQL query
      * @param array  $variables The optional variables for the query
+     * @param bool $storefront True if storefront, rather than admin
      *
      * @throws \Exception When missing api password is missing for private apps
      * @throws \Exception When missing access key is missing for public apps
      *
      * @return object An Object of the Guzzle response, and JSON-decoded body
      */
-    public function graph(string $query, array $variables = [])
+    public function graph(string $query, array $variables = [], bool $storefront = false)
     {
+        $this->storefront = $storefront;
+
         // Build the request
         $request = ['query' => $query];
         if (count($variables) > 0) {
@@ -668,10 +694,19 @@ class BasicShopifyAPI implements LoggerAwareInterface
 
         // Create the request, pass the access token and optional parameters
         $req = json_encode($request);
+
+        if ($storefront) {
+            $path = $this->versionPath('/api/graphql.json');
+            $this->client->headers["X-Shopify-Storefront-Access-Token"] = "ff0dedab52100493c4a341c848c5c3b1"; //doesnt seem to work. this might not be needed
+        } else {
+            $path = $this->versionPath('/admin/api/graphql.json');
+        }
+
+        
         $response = $this->client->request(
             'POST',
             $this->getBaseUri()->withPath(
-                $this->versionPath('/admin/api/graphql.json')
+                $path
             ),
             ['body' => $req]
         );
@@ -817,7 +852,7 @@ class BasicShopifyAPI implements LoggerAwareInterface
     {
         // Get the request URI
         $uri = $request->getUri();
-
+        
         if ($this->isAuthableRequest((string) $uri)) {
             if ($this->isRestRequest((string) $uri)) {
                 // Checks for REST
@@ -827,6 +862,7 @@ class BasicShopifyAPI implements LoggerAwareInterface
                 }
 
                 // Private: Add auth for REST calls
+                
                 if ($this->private) {
                     // Add the basic auth header
                     return $request->withHeader(
@@ -850,11 +886,22 @@ class BasicShopifyAPI implements LoggerAwareInterface
                     throw new Exception('Access token required for public Shopify GraphQL calls');
                 }
 
+                #dd('in thing, $this->storefront=' . $this->storefront);
                 // Public/Private: Add the token header
-                return $request->withHeader(
-                    'X-Shopify-Access-Token',
-                    $this->apiPassword ?? $this->accessToken
-                );
+                if ( $this->storefront ) {
+                    return $request->withHeader(
+                        'X-Shopify-Storefront-Access-Token',
+                        'ff0dedab52100493c4a341c848c5c3b1'
+                    );
+                } else {
+                    return $request->withHeader(
+                        'X-Shopify-Access-Token',
+                        $this->apiStoreFrontKey
+                    );
+                }
+
+
+                
             }
         }
 

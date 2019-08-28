@@ -19,12 +19,22 @@ The recommended way to install is [through composer](http://packagist.org).
 	$ SHOPIFY_APP_NAMESPACE='Trevetts Private App'
 	SHOPIFY_API_KEY= #API Key for admin calls
 	SHOPIFY_API_SECRET = #secret for admin calls
-	SHOPIFY_MYSHOPIFY_DOMAIN = #first part of shopify domain without myshopify.com
+	SHOPIFY_MYSHOPIFY_DOMAIN = #i.e. test-store.myshopify.com
+	SHOPIFY_STOREFRONT_TOKEN
 
 
 ## Usage
 
 Add `use OhMyBrew\BasicShopifyAPI;` to your imports.
+
+### Example Storefront Graph Call
+	$api = new BasicShopifyAPI( true );
+	$api->setShop(env('SHOPIFY_MYSHOPIFY_DOMAIN', false));
+	$api->setAccessToken(env('SHOPIFY_API_TOKEN', false));
+	$api->setStoreFrontKey(env('SHOPIFY_STOREFRONT_TOKEN', false));
+	$api->enableRateLimiting();
+
+	$request = $api->graph('mutation {...}', [], true);
 
 ### Public API
 
@@ -70,6 +80,7 @@ $api->setVersion('2019-04'); // "YYYY-MM" or "unstable"
 $api->setShop($_SESSION['shop']);
 $api->setApiKey(env('SHOPIFY_API_KEY'));
 $api->setApiSecret(env('SHOPIFY_API_SECRET'));
+$api->setStoreFrontKey(env('SHOPIFY_STOREFRONT_TOKEN'));
 
 $code = $_GET['code'];
 if (!$code) {
