@@ -732,11 +732,59 @@ class BasicShopifyAPI implements LoggerAwareInterface
         // Return Guzzle response and JSON-decoded body
         return (object) [
             'response'   => $response,
-            'body'       => property_exists($body, 'errors') ? $body->errors : $body->data,
+            'body'       => property_exists($body, 'errors') ? $body->errors : static::clean_body($body->data),
             'errors'     => property_exists($body, 'errors'),
             'timestamps' => [$tmpTimestamp, $this->requestTimestamp],
         ];
     }
+
+    private static function clean_body($body) {
+        $arr = json_decode(json_encode($body), true);
+        $found = true;
+        while ($found) {$found = static::clean_body_thing($arr);}
+        return (object)$arr;
+    }
+
+    
+    private static function clean_body_thing(&$array)
+    {
+        $deleteme = ["node","edges"];
+        if (is_array($array)) {
+            foreach ($array as $k1 => $v1) {
+                if ( in_array($k1,$deleteme) && !is_numeric($k1) ) {$array = $v1;return true;}
+                if (is_array($v1)) {
+                    foreach ($v1 as $k2 => $v2) {
+                        if ( in_array($k2,$deleteme) && !is_numeric($k2) ) {$array[$k1] = $v2;return true;}
+                        if (is_array($v2)) {
+                            foreach ($v2 as $k3 => $v3) {
+                                if ( in_array($k3,$deleteme) && !is_numeric($k3) ) {$array[$k1][$k2] = $v3;return true;}
+                                if (is_array($v3)) {
+                                    foreach ($v3 as $k4 => $v4) {
+                                        if ( in_array($k4,$deleteme) && !is_numeric($k4) ) {$array[$k1][$k2][$k3] = $v4;return true;}
+                                        if (is_array($v4)) {
+                                            foreach ($v4 as $k5 => $v5) {
+                                                if ( in_array($k5,$deleteme) && !is_numeric($k5) ) {$array[$k1][$k2][$k3][$k4] = $v5;return true;}
+                                                if (is_array($v5)) {
+                                                    foreach ($v5 as $k6 => $v6) {
+                                                        if ( in_array($k6,$deleteme) && !is_numeric($k6) ) {$array[$k1][$k2][$k3][$k4][$k5] = $v6;return true;}
+
+                                                    }
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
 
     /**
      * Runs a request to the Shopify API.
@@ -839,6 +887,10 @@ class BasicShopifyAPI implements LoggerAwareInterface
             'timestamps' => [$tmpTimestamp, $this->requestTimestamp],
         ];
     }
+
+
+    
+
 
     /**
      * Ensures we have the proper request for private and public calls.
