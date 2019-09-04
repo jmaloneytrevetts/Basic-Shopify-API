@@ -767,7 +767,17 @@ class BasicShopifyAPI implements LoggerAwareInterface
                                                 if (is_array($v5)) {
                                                     foreach ($v5 as $k6 => $v6) {
                                                         if ( in_array($k6,$deleteme) && !is_numeric($k6) ) {$array[$k1][$k2][$k3][$k4][$k5] = $v6;return true;}
-
+                                                            if (is_array($v6)) {
+                                                                foreach ($v6 as $k7 => $v7) {
+                                                                    if ( in_array($k7,$deleteme) && !is_numeric($k7) ) {$array[$k1][$k2][$k3][$k4][$k5][$k6] = $v7;return true;}
+                                                                        if (is_array($v7)) {
+                                                                            foreach ($v7 as $k8 => $v8) {
+                                                                                if ( in_array($k8,$deleteme) && !is_numeric($k8) ) {$array[$k1][$k2][$k3][$k4][$k5][$k6][$k7] = $v8;return true;}
+                        
+                                                                            }
+                                                                        }
+                                                                }
+                                                            }
                                                     }
                                                 }
 
