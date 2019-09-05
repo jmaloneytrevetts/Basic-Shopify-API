@@ -697,7 +697,7 @@ class BasicShopifyAPI implements LoggerAwareInterface
 
         if ($storefront) {
             $path = $this->versionPath('/api/graphql.json');
-            $this->client->headers["X-Shopify-Storefront-Access-Token"] = "ff0dedab52100493c4a341c848c5c3b1"; //doesnt seem to work. this might not be needed
+            $this->client->headers["X-Shopify-Storefront-Access-Token"] = env('SHOPIFY_STOREFRONT_TOKEN'); //doesnt seem to work. this might not be needed
         } else {
             $path = $this->versionPath('/admin/api/graphql.json');
         }
@@ -711,6 +711,7 @@ class BasicShopifyAPI implements LoggerAwareInterface
             ['body' => $req]
         );
         $this->log("Graph request: {$req}");
+        #echo '<textarea>'.$req.'</textarea>';
 
         // Grab the data result and extensions
         $body = $this->jsonDecode($response->getBody());
@@ -742,7 +743,8 @@ class BasicShopifyAPI implements LoggerAwareInterface
         $arr = json_decode(json_encode($body), true);
         $found = true;
         while ($found) {$found = static::clean_body_thing($arr);}
-        return (object)$arr;
+        return json_decode(json_encode($arr));
+        #return (object)$arr;
     }
 
     
